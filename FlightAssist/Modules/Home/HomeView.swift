@@ -5,9 +5,6 @@
 //  Created by danah alsadan on 20/10/1447 AH.
 //
 
-
-
-
 import SwiftUI
 import VisionKit
 
@@ -35,11 +32,14 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color.white)
         }
+        // ✅ هنا حطينا الشيت الجديد
         .sheet(isPresented: $showScanner) {
-            BoardingScannerView(
-                onScan: { value in
+            TicketScannerView(
+                onScan: { scannedText in
                     showScanner = false
-                    viewModel.handleScannedValue(value)
+                    let userID = AppState.shared.currentUser?.recordID.recordName ?? ""
+                    let scanVM = TicketScannerViewModel()
+                    scanVM.parseAndSave(scannedText: scannedText, userID: userID)
                 },
                 onError: { error in
                     showScanner = false
@@ -61,6 +61,7 @@ struct HomeView: View {
     }
 }
 
+// باقي الكود كما هو بدون أي تغيير
 private extension HomeView {
 
     var topMapSection: some View {
@@ -112,11 +113,12 @@ private extension HomeView {
 
     var scanBox: some View {
         Button {
-            if DataScannerViewController.isSupported &&
-                DataScannerViewController.isAvailable {
+            // نتأكد إن الجهاز يدعم DataScannerViewController
+            if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
                 showScanner = true
             } else {
-                viewModel.scannerError = "Scanner unavailable"
+                // رسالة واضحة للمستخدم
+                viewModel.scannerError = "Scanning is only available on a real iPhone running iOS 16 or later with camera access."
             }
         } label: {
             VStack(spacing: 12) {
@@ -132,7 +134,6 @@ private extension HomeView {
             .clipShape(RoundedRectangle(cornerRadius: 18))
         }
     }
-
     var searchBar: some View {
         HStack(spacing: 8) {
             Text("Hinted search text")
@@ -267,6 +268,6 @@ private extension HomeView {
 
 #Preview {
     let defaults = UserDefaults.standard
-    defaults.set("Find my\nseat,Chanage\nseats", forKey: "recentServicesStorage")
+    defaults.set("Find my\nseat,Change\nseats", forKey: "recentServicesStorage")
     return HomeView()
 }
