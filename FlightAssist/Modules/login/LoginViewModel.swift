@@ -4,22 +4,62 @@
 //
 //  Created by danah alsadan on 20/10/1447 AH.
 //
-
 import Foundation
+import CloudKit
 
+@MainActor
 final class LoginViewModel: ObservableObject {
     
     @Published var loginModel = LoginModel()
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    @Published var isLoggedIn = false
+    
+    private let db = CKContainer(identifier: "iCloud.com.Jumana.Project").publicCloudDatabase
     
     func togglePasswordVisibility() {
         loginModel.showPassword.toggle()
     }
     
     func login() {
-        // Login logic here
+        Task {
+            guard !loginModel.username.isEmpty, !loginModel.password.isEmpty else {
+                errorMessage = "Please fill in all fields"
+                return
+            }
+            
+            isLoading = true
+            errorMessage = nil
+            
+            do {
+                // بحث بالإيميل بدل الاسم
+                let predicate = NSPredicate(format: "Email == %@", loginModel.username)
+                let query = CKQuery(recordType: "User", predicate: predicate)
+                let result = try await db.records(matching: query)
+                
+                guard let record = try result.matchResults.first?.1.get() else {
+                    errorMessage = "User not found"
+                    isLoading = false
+                    return
+                }
+                
+                let storedPassword = record["Password"] as? String ?? ""
+                guard storedPassword == loginModel.password else {
+                    errorMessage = "Incorrect password"
+                    isLoading = false
+                    return
+                }
+                
+                AppState.shared.currentUser = record
+                isLoggedIn = true
+                
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            
+            isLoading = false
+        }
     }
     
-    func forgotPassword() {
-        // Forgot password logic here
-    }
+    func forgotPassword() { }
 }
