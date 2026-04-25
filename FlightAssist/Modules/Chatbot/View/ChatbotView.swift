@@ -8,9 +8,13 @@
 import SwiftUI
 
 struct ChatbotView: View {
-    @StateObject private var viewModel = ChatbotViewModel()
+    @StateObject private var viewModel: ChatbotViewModel
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isInputFocused: Bool
+    
+    init() {
+        _viewModel = StateObject(wrappedValue: ChatbotViewModel())
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -41,14 +45,14 @@ struct ChatbotView: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.black) // ✅ صار أسود
+                        .foregroundColor(.black)
                 }
                 
                 Spacer()
                 
                 Text("Chat bot")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black) // ✅ صار أسود
+                    .foregroundColor(.black)
                 
                 Spacer()
                 

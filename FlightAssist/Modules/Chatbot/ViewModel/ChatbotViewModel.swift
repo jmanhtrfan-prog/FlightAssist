@@ -22,12 +22,8 @@ class ChatbotViewModel: ObservableObject {
     // MARK: - INIT
     init(chatService: ChatService? = nil) {
         
-        // ✅ نجيب الـ API Key هنا بشكل آمن
-        let apiKey = ProcessInfo.processInfo.environment["GROQ_API_KEY"] ?? ""
-        
-        if apiKey.isEmpty {
-            fatalError("❌ Missing GROQ_API_KEY in environment variables")
-        }
+        // ✅ حذف الـ fatalError — نستخدم API key من الـ environment أو نحط واحد افتراضي
+        let apiKey = ProcessInfo.processInfo.environment["GROQ_API_KEY"] ?? "gsk_placeholder"
         
         if let service = chatService {
             self.chatService = service
